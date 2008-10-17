@@ -4,8 +4,12 @@
     <string name="Pause">Pause</string>
     <string name="Resume">Resume</string>
     <string name="Restart">Restart</string>
+    <string name="Next">Next:</string>
+    <string name="Score">Score:</string>
     <string name="Quit">Quit</string>
+    <string name="GameOver">Game Over!</string>
     <string name="Lost">There is no more room for the new piece, you have lost.</string>
+    <string name="Lost2">You lose</string>
     <string name="Replay">Replay?</string>
     <string name="QuitG">Quit Game?</string>
 </resources>

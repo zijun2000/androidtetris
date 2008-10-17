@@ -1,7 +1,7 @@
 package android.game.tetris;
 
-import android.content.Context;
-import android.content.DialogInterface;
+import android.app.Activity;
+import android.database.Cursor;
 import android.game.score.ScoreManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,10 +17,13 @@ public class TetrisView extends View implements ITetrisConstants {
 	private boolean mHasFocus; 	//gameView is the focus and can be updated with setter below
 	public  void setGameFocus( boolean hasFocus ) {	mHasFocus = hasFocus;	}
 	private long mNextUpdate; 	//timestamp when next update can be called
+	private long mLastGravity;	//allow updates of shape independantly from gravity by checking this
 	private int mTicks;			//number of ticks that have been calculated
 	private int mSeconds;		//number of seconds of gameplay
-	private int mLastGravity;	//allow updates of shape independantly from gravity by checking this
     private Paint mPaint;		//paint object to use in draws.
+    private Activity mActivityHandle; //save ref to activity to be able to quit from here
+    private ScoreManager scoreManager;
+    
     
     //game specific
     private TetrisGrid grid; 			//game playfield/grid
@@ -35,9 +38,10 @@ public class TetrisView extends View implements ITetrisConstants {
      * 
      * @param context - param needed for View superclass
      */
-	public TetrisView(Context context) {
+	public TetrisView(Activity context) {
 		//init view obj
 		super(context);
+		mActivityHandle = context;
 		setBackgroundColor(Color.BLACK);
 		setFocusable(true);
 		setFocusableInTouchMode(true);
@@ -47,6 +51,7 @@ public class TetrisView extends View implements ITetrisConstants {
 		grid = new TetrisGrid();
 		currentShape = new TetrisShape(grid);
 		mPaint = new Paint();
+		scoreManager = new ScoreManager(context);
 		
 		//init
 		init();
@@ -58,6 +63,7 @@ public class TetrisView extends View implements ITetrisConstants {
 	private void init() {
 
 		//init members
+		currentShape.isInited = false;
 		currentAction = ACTION_NONE;
 		mNextUpdate = 0;
 		mTicks = 0;
@@ -66,13 +72,18 @@ public class TetrisView extends View implements ITetrisConstants {
 
 		grid.init();
 		
-		ScoreManager.currentScore = 0;
+		scoreManager.currentScore = 0;
 
 	}
 
-	public void restart() {
+	public void restartGame() {
 		init();
-		currentShape.init();
+		currentShape.isGameOver = false;
+	}
+
+
+	public void quitGame() {
+		mActivityHandle.finish();
 	}
 	
 	/**
@@ -153,20 +164,12 @@ public class TetrisView extends View implements ITetrisConstants {
 			{
 				if(!AlertManager.IsAlertActive())
 				{
-					AlertManager.PushAlert(getContext(), new CharSequence[]{"Replay","QuitG"}, new  DialogInterface.OnClickListener(){
-	
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							// resolve alert
-							switch(which)
-							{
-								default:
-								break;
-							}
-							
-							AlertManager.Resolve();
-						}
-					});
+					//SaveManager.getSingleton(mActivityHandle).saveScore("AAA",25);
+					//SaveManager.getSingleton(mActivityHandle).saveScore("AAA",24);
+					//SaveManager.getSingleton(mActivityHandle).saveScore("AAA",32);
+					//boolean topScore = SaveManager.getSingleton(mActivityHandle).isTopScore(ScoreManager.currentScore);
+					//int alertType = (topScore)? AlertManager.TYPE_TOP_SCORE:AlertManager.TYPE_GAME_OVER;
+					//AlertManager.PushAlert(this, alertType);
 				}
 
 			}
@@ -177,12 +180,16 @@ public class TetrisView extends View implements ITetrisConstants {
 				mTicks++;
 				currentShape.update(currentAction);
 				currentAction = ACTION_NONE;
-				if(mTicks/GRAVITY_RATE > mLastGravity || currentShape.IsFalling())
+				if(time - mLastGravity > GRAVITY_RATE || currentShape.IsFalling())
 				{
-					mLastGravity =  mTicks/GRAVITY_RATE;
+					mLastGravity = time;
 					boolean shapeIsLocked = currentShape.addGravity();
 					if(shapeIsLocked)
-						grid.update();
+					{
+						int points = grid.update();
+						if(points != 0)
+							scoreManager.currentScore += points;
+					}
 				}
 				
 				if(mTicks/FRAME_RATE > mSeconds)
@@ -215,24 +222,98 @@ public class TetrisView extends View implements ITetrisConstants {
 		
 		//paint hud
 		
-		//right hud
-		int y = getRight()-HUD_SCORE_TEXT_OFFSET;
-		int h = getTop()+MARGIN_TOP+HUD_SCORE_Y_START;
-		mPaint.setTextAlign(Align.RIGHT);
-		mPaint.setColor(HUD_SCORE_WORD_COLOR);
-		canvas.drawText("Score: ", y, h, mPaint);
-		h+=HUD_SCORE_INTERLINE;
-		mPaint.setColor(HUD_SCORE_NUM_COLOR);
-		canvas.drawText(""+ScoreManager.currentScore, y, h, mPaint);
-		//normal align
-		mPaint.setTextAlign(Align.LEFT);
+		paintHud(canvas, mPaint);
 		
 		//make sure draw will be recalled.
 		invalidate();
 	}
 
+	private void paintHud(Canvas canvas, Paint paint) {
+		int x,y,i,offset,tmpX,tmpY;
+		//right hud
+		//score
+		x = getRight()-HUD_SCORE_TEXT_OFFSET;
+		y = getTop()+MARGIN_TOP+HUD_SCORE_Y_START;
+		mPaint.setTextAlign(Align.RIGHT);
+		mPaint.setColor(HUD_SCORE_WORD_COLOR);
+		canvas.drawText("Score", x, y, mPaint);
+		y+=HUD_SCORE_INTERLINE;
+		mPaint.setColor(HUD_SCORE_NUM_COLOR);
+		canvas.drawText(""+scoreManager.currentScore, x, y, mPaint);
+		
+		//next shape
+		x = getRight()-HUD_NEXT_TEXT_OFFSET;
+		y = getTop()+MARGIN_TOP+HUD_NEXT_WORD_Y_START;
+		mPaint.setColor(HUD_NEXT_WORD_COLOR);
+		canvas.drawText("Next", x, y, mPaint);
+		mPaint.setColor(HUD_NEXT_SHAPE_COLOR);
+		x = getRight() - HUD_NEXT_SHAPE_X_START;
+		y = getTop()+MARGIN_TOP+HUD_NEXT_SHAPE_Y_START;
+		//int t = currentShape.getNextType();
+		offset = (currentShape.getNextType()*SHAPE_TABLE_TYPE_OFFSET)+START_ORIENTATION*SHAPE_TABLE_ELEMS_PER_ROW;
+		i = 0;
+		tmpX = x;
+		tmpY = y;
+		do {
+			canvas.drawRect(tmpX, tmpY, tmpX+HUD_NEXT_SHAPE_CELL_SIZE, tmpY+HUD_NEXT_SHAPE_CELL_SIZE, mPaint);
+			switch(SHAPE_TABLE[offset+i])
+			{
+				case C_LEFT:
+					tmpX=x-HUD_NEXT_SHAPE_CELL_OFFSET;
+					tmpY=y;
+					break;
+				case C_RIGHT:
+					tmpX=x+HUD_NEXT_SHAPE_CELL_OFFSET;
+					tmpY=y;
+					break;
+				case C_UP:
+					tmpX=x;
+					tmpY=y-HUD_NEXT_SHAPE_CELL_OFFSET;
+					break;
+				case C_DOWN:
+					tmpX=x;
+					tmpY=y+HUD_NEXT_SHAPE_CELL_OFFSET;
+					break;
+				case C_LEFT+C_DOWN:
+					tmpX=x-HUD_NEXT_SHAPE_CELL_OFFSET;
+					tmpY=y+HUD_NEXT_SHAPE_CELL_OFFSET;
+					break;
+				case C_RIGHT+C_DOWN:
+					tmpX=x+HUD_NEXT_SHAPE_CELL_OFFSET;
+					tmpY=y+HUD_NEXT_SHAPE_CELL_OFFSET;
+					break;
+				case C_LEFT+C_UP:
+					tmpX=x-HUD_NEXT_SHAPE_CELL_OFFSET;
+					tmpY=y-HUD_NEXT_SHAPE_CELL_OFFSET;
+					break;
+				case C_RIGHT+C_UP:
+					tmpX=x+HUD_NEXT_SHAPE_CELL_OFFSET;
+					tmpY=y-HUD_NEXT_SHAPE_CELL_OFFSET;
+					break;
+				case C_RIGHT*2:
+					tmpX=x-(HUD_NEXT_SHAPE_CELL_OFFSET*2);//i am cheating here and moving to the left for better hud display (anchor is on right)
+					tmpY=y;
+					break;
+				default:
+					//need to manage
+					break;
+			}
+			i++;
+		} while (i < MAX_ELEMS);
 
-
+		scoreManager.saveScore("AAA");
+		Cursor c = scoreManager.getTopScores();
+		c.moveToFirst(); 
+		for(int j=0;j<c.getCount();j++)
+		{
+			int test = c.getInt(c.getColumnIndex(ScoreManager.DATABASE_TABLE_SCORES_SCORE));
+			c.moveToNext();
+		}
+		
+		
+		//normal align
+		mPaint.setTextAlign(Align.LEFT);
+	}
 
 
 }
