@@ -7,9 +7,11 @@ public class TetrisShape implements ITetrisConstants{
 
 	public boolean isGameOver = false;
 	public boolean isInited = false;
+	
 	private int mOrient;
 	private int mType;
 	private int mNextType;
+	public int getNextType(){return mNextType;}
 	private int mState;
 	private int[] mElems;
 	
@@ -24,7 +26,8 @@ public class TetrisShape implements ITetrisConstants{
 		mNextType = mRand.nextInt(TYPE_MAX_TYPES);
 	}
 	
-	public boolean init() {
+	public boolean spawn() {
+		isGameOver = false;
 		for (int i = 0; i < mElems.length; i++) {
 			mElems[i] = DONT_CHECK_CELL;
 		}
@@ -90,7 +93,7 @@ public class TetrisShape implements ITetrisConstants{
 		}
 		else
 		{
-			isInited = init();
+			isInited = spawn();
 			
 			if(!isInited)//this means no room to init = game over
 			{
@@ -119,7 +122,7 @@ public class TetrisShape implements ITetrisConstants{
 	private boolean alignFromOrientation(int orientation)
 	{
 		int[] newElemPos = mElems.clone();
-		int typeOffset = (mType*SHAPE_TABLE_ROWS_PER_TYPE*SHAPE_TABLE_ELEMS_PER_ROW);
+		int typeOffset = (mType*SHAPE_TABLE_TYPE_OFFSET);
 		orientation *= SHAPE_TABLE_ELEMS_PER_ROW;
 		newElemPos[ELEM_1] = newElemPos[ELEM_BASE]+SHAPE_TABLE[typeOffset+orientation+SHAPE_TABLE_ELEMS_1];
 		newElemPos[ELEM_2] = newElemPos[ELEM_BASE]+SHAPE_TABLE[typeOffset+orientation+SHAPE_TABLE_ELEMS_2];

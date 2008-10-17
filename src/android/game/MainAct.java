@@ -38,7 +38,7 @@ public class MainAct extends Activity {
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
     	if(item.getTitle().equals("Restart"))
-    		gV.restart();
+    		gV.restartGame();
     	if(item.getTitle().equals("Quit"))
     		finish();//just close
     	return super.onMenuItemSelected(featureId, item);

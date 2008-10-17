@@ -1,6 +1,5 @@
 package android.game.tetris;
 
-import android.game.score.ScoreManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -18,7 +17,6 @@ public class TetrisGrid implements ITetrisConstants  {
     private int mBottom;
     
     public TetrisGrid() {
-
 		mCells = new boolean[PLAYFIELD_ROWS*PLAYFIELD_COLS];
 		init();
 	}
@@ -163,18 +161,20 @@ public class TetrisGrid implements ITetrisConstants  {
 		canvas.drawRect(mLeft, mTop, mRight, mBottom, paint);
 	}
 
-	public void update() {
+	public int update() {
+		int points = 0;
 		for (int row =  PLAYFIELD_ROWS-1; row >= 0; row--) {
 			if(CheckRowForSame(row, false))
 				break;
 			if(CheckRowForSame(row, true))
 			{
-				ScoreManager.currentScore++;
+				points++;
 				SetAllRowTo(row, false);
 				MakeGridCollapse(row-1);
 				row++;//we collapsed grid onto this row so we need to check it again by cancelling the upcomming decrement
 			}
 		}
+		return points;
 	}
 
 	private void MakeGridCollapse(int row) {

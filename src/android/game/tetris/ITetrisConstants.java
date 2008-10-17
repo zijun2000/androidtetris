@@ -12,9 +12,7 @@ public interface ITetrisConstants {
 	
 	//GAME
 	//frames per second
-	public static final int FRAME_RATE = 12;
-	//ticks before engine calls gravity
-	public static final int GRAVITY_RATE = ( FRAME_RATE >> 1 );
+	public static final int FRAME_RATE = 48;
 	//delay before reupdating
 	public final static int OUT_OF_PAUSE_DELAY = FRAME_RATE*2;
 	//only first keypress counts for game actions.
@@ -31,26 +29,38 @@ public interface ITetrisConstants {
 	//HUD
 	//does playfield leave space for a margin
 	public static final boolean PLAYFIELD_USE_MARGINS = true;
-	//in px
+	//in px 
 	public static final int MARGIN_TOP = 36;
 	public static final int MARGIN_LEFT = 12;
 	public static final int MARGIN_RIGHT = 64;
 	public static final int MARGIN_BOTTOM = 36;
+	//ANCHORED TO THE RIGHT!
 	public static final int HUD_SCORE_TEXT_OFFSET = 5;
 	public static final int HUD_SCORE_Y_START = 40;
 	public static final int HUD_SCORE_INTERLINE = 20;
 	public static final int HUD_SCORE_WORD_COLOR = Color.WHITE;
 	public static final int HUD_SCORE_NUM_COLOR = Color.YELLOW;
+	public static final int HUD_NEXT_WORD_Y_START = HUD_SCORE_Y_START+HUD_SCORE_INTERLINE+20;
+	public static final int HUD_NEXT_TEXT_OFFSET = HUD_SCORE_TEXT_OFFSET;
+	public static final int HUD_NEXT_SHAPE_X_START = 20;
+	public static final int HUD_NEXT_SHAPE_Y_START = HUD_NEXT_WORD_Y_START+15;
+	public static final int HUD_NEXT_SHAPE_CELL_SIZE = 5;
+	public static final int HUD_NEXT_SHAPE_CELL_OFFSET = HUD_NEXT_SHAPE_CELL_SIZE+3;
+	public static final int HUD_NEXT_WORD_COLOR = Color.WHITE;
+	public static final int HUD_NEXT_SHAPE_COLOR = Color.GRAY;
 	
 	
 	
 	//PLAYFIELD
 	//grid size
-	public static final int PLAYFIELD_COLS = 10;
-	public static final int PLAYFIELD_ROWS = 14;
+	public static final int PLAYFIELD_COLS = 12;
+	public static final int PLAYFIELD_ROWS = 18;
+	
+	//ticks before engine calls gravity
+	public static final int GRAVITY_RATE = (1000 / 2);
 
 	//cell where new shapes apear
-	public static final int START_CELL		= 4;
+	public static final int START_CELL		= (PLAYFIELD_COLS/2)-1;
 	//cellscroll directions
 	public static final int C_CENTER = 0;
 	public static final int C_LEFT = -1;
@@ -104,6 +114,7 @@ public interface ITetrisConstants {
 	public static final int SHAPE_TABLE_ELEMS_3 	  = 2;
 	public static final int SHAPE_TABLE_ELEMS_PER_ROW = 3;
 	public static final int SHAPE_TABLE_ROWS_PER_TYPE = 4;
+	public static final int SHAPE_TABLE_TYPE_OFFSET	  = SHAPE_TABLE_ROWS_PER_TYPE*SHAPE_TABLE_ELEMS_PER_ROW;
 	public static final int[] SHAPE_TABLE =
 	{
 		//TYPE LONG = 0

@@ -17,13 +17,17 @@ public final class R {
         public static final int main=0x7f030000;
     }
     public static final class string {
-        public static final int Lost=0x7f040005;
+        public static final int GameOver=0x7f040007;
+        public static final int Lost=0x7f040008;
+        public static final int Lost2=0x7f040009;
+        public static final int Next=0x7f040004;
         public static final int Pause=0x7f040001;
-        public static final int Quit=0x7f040004;
-        public static final int QuitG=0x7f040007;
-        public static final int Replay=0x7f040006;
+        public static final int Quit=0x7f040006;
+        public static final int QuitG=0x7f04000b;
+        public static final int Replay=0x7f04000a;
         public static final int Restart=0x7f040003;
         public static final int Resume=0x7f040002;
+        public static final int Score=0x7f040005;
         public static final int app_name=0x7f040000;
     }
 }
