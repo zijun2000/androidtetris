@@ -48,6 +48,14 @@ public interface ITetrisConstants {
 	public static final int HUD_NEXT_SHAPE_CELL_OFFSET = HUD_NEXT_SHAPE_CELL_SIZE+3;
 	public static final int HUD_NEXT_WORD_COLOR = Color.WHITE;
 	public static final int HUD_NEXT_SHAPE_COLOR = Color.GRAY;
+	public static final int HUD_TOP_SCORES_Y_START = HUD_NEXT_WORD_Y_START+50;
+	public static final int HUD_TOP_SCORES_TEXT_OFFSET = HUD_SCORE_TEXT_OFFSET;
+	public static final int HUD_TOP_SCORES_TITLE_COLOR = Color.WHITE;
+	public static final int HUD_TOP_SCORES_RANK_COLOR = Color.GREEN;
+	public static final int HUD_TOP_SCORES_WORD_COLOR = Color.GREEN;
+	public static final int HUD_TOP_SCORES_SCORE_COLOR = Color.WHITE;
+	public static final int HUD_TOP_SCORES_RANK_OFFSET = 45;
+	public static final int HUD_TOP_SCORES_WORD_OFFSET = 25;
 	
 	
 	
